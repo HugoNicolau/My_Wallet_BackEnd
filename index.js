@@ -3,7 +3,8 @@ import {MongoClient, ObjectId} from "mongodb";
 import dotenv from "dotenv";
 import cors from "cors";
 import joi from "joi";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
+import {v4 as tokenGenerator} from 'uuid';
 
 dotenv.config();
 const app = express();
@@ -70,7 +71,10 @@ app.post("/sing-in", async(req,res) => {
         if(!passwordOk){
             return res.sendStatus(401);
         }
-        res.send({message: `Olá ${userExists.name}, seja bem vindo(a)`})
+        const token = tokenGenerator();
+        await db.collection('sessions').insertOne({token, userId:userExists._id});
+
+        res.send({token})
     } catch(err){
         console.log(err);
         res.sendStatus(500);
