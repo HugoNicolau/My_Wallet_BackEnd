@@ -3,6 +3,7 @@ import {MongoClient, ObjectId} from "mongodb";
 import dotenv from "dotenv";
 import cors from "cors";
 import joi from "joi";
+import bcrypt from "bcrypt"
 
 dotenv.config();
 const app = express();
@@ -46,7 +47,8 @@ app.post("/sing-up", async (req, res) => {
             return;
         }
 
-        await db.collection('users').insertOne({name:req.body.name, email:req.body.email, password:req.body.password});
+        const hashPassword = bcrypt.hashSync(req.body.password, 10);
+        await db.collection('users').insertOne({name:req.body.name, email:req.body.email, password:hashPassword});
         res.sendStatus(201)
 
     }catch(err){
@@ -55,7 +57,25 @@ app.post("/sing-up", async (req, res) => {
     }
 })
 
+app.post("/sing-in", async(req,res) => {
+    const { email, password } = req.body;
 
+    try{
+        const userExists = await db.collection('users').findOne({email});
+        if(!userExists){
+            return res.sendStatus(401);
+        }
+        const passwordOk = bcrypt.compareSync(password, userExists.password);
+
+        if(!passwordOk){
+            return res.sendStatus(401);
+        }
+        res.send({message: `Olá ${userExists.name}, seja bem vindo(a)`})
+    } catch(err){
+        console.log(err);
+        res.sendStatus(500);
+    }
+})
 
 
 
