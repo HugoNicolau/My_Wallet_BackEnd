@@ -31,7 +31,7 @@ try{
 const db = mongoClient.db("myWalletDb")
 
 
-app.post("/sing-up", async (req, res) => {
+app.post("/sign-up", async (req, res) => {
 //nome, email, senha
     try{
         const validation = userSchema.validate(req.body);
@@ -58,7 +58,7 @@ app.post("/sing-up", async (req, res) => {
     }
 })
 
-app.post("/sing-in", async(req,res) => {
+app.post("/sign-in", async(req,res) => {
     const { email, password } = req.body;
 
     try{
@@ -67,6 +67,8 @@ app.post("/sing-in", async(req,res) => {
             return res.sendStatus(401);
         }
         const passwordOk = bcrypt.compareSync(password, userExists.password);
+        
+
 
         if(!passwordOk){
             return res.sendStatus(401);
