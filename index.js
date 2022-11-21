@@ -16,7 +16,7 @@ const mongoClient = new MongoClient(process.env.MONGO_URI);
 const userSchema = joi.object({
     name: joi.string().required().min(3),
     email: joi.string().email().required(),
-    password: joi.string().required()
+    password: joi.string().required().min(3)
 
 })
 
@@ -83,8 +83,32 @@ app.post("/sign-in", async(req,res) => {
     }
 })
 
+app.get("/balance", async(req, res) => {
+    const {authorization} = req.headers;
+    const token = authorization?.replace("Bearer ", "")
 
+    if(!token){
+        return res.sendStatus(401);
+    }
+    const session = await db.collection('sessions').findOne({token});
 
+    if(!session){
+        return res.sendStatus(401);
+    }
+    const user = await db.collection('users').findOne({_id:session.userId})
+
+    if(!user){
+        return res.sendStatus(404);
+    }
+
+    const userBalance = await db.collection('balance').find({userId:session.userId});
+
+    return res.send(userBalance);
+
+})
+
+//Vou ter o post balance onde os dados que vou ter são:
+//userId, transactionName, transactionValue
 
 
 app.listen(5000, () => console.log("Server running at port 5000"));
