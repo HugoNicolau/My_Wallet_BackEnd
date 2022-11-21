@@ -1,0 +1,12 @@
+export default function schemaValidation(schema) {
+  return (req, res, next) => {
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      const errors = validation.error.details.map((detail) => detail.message);
+      res.send(errors).status(422);
+      return;
+    }
+    next();
+  };
+}
