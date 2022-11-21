@@ -20,6 +20,10 @@ const userSchema = joi.object({
 
 })
 
+const balanceSchema = joi.object({
+    description: joi.string().required().min(2).max(30),
+    value: joi.number().required()
+})
 
 
 try{
@@ -108,7 +112,46 @@ app.get("/balance", async(req, res) => {
 })
 
 //Vou ter o post balance onde os dados que vou ter são:
-//userId, transactionName, transactionValue
+//userId, description, value
+app.post("/balance", async(req, res) => {
+    const {value, description} = req.body
+    const {authorization} = req.headers;
+    const token = authorization?.replace("Bearer ", "")
+    if(!token){
+        return res.sendStatus(401);
+    }
+    const session = await db.collection('sessions').findOne({token});
+
+    if(!session){
+        return res.sendStatus(401);
+    }
+    const user = await db.collection('users').findOne({_id:session.userId})
+
+    if(!user){
+        return res.sendStatus(404);
+    }
+
+
+
+    try{
+        const validation = balanceSchema.validate(req.body)
+        if(validation.error){
+            const errors = validation.error.details.map(detail => detail.message);
+            res.send(errors).status(422);
+            return
+        }
+
+        const item = {userId:session.uderId, value, description}
+        await db.collection('balance').insertOne(item)
+        res.send(item).status(200)
+
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+
+})
+
 
 
 app.listen(5000, () => console.log("Server running at port 5000"));
