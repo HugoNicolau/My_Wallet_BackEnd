@@ -3,7 +3,7 @@ import { db, objectId } from "../dbConnection/mongo.js";
 //Vou ter o post balance onde os dados que vou ter são:
 //userId, description, value
 export async function postBalance(req, res) {
-  const { value, description } = req.body;
+  const { value, description, type, date } = req.body;
   const token = res.locals.token;
 
   const session = await db.collection("sessions").findOne({ token });
@@ -20,7 +20,7 @@ export async function postBalance(req, res) {
   }
 
   try {
-    const item = { userId: session.userId, value, description };
+    const item = { userId: session.userId, value, description, type, date, name:user.name };
     await db.collection("balance").insertOne(item);
     res.send(item).status(201);
   } catch (err) {
