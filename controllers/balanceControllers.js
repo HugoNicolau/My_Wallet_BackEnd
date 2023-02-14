@@ -22,7 +22,7 @@ export async function postBalance(req, res) {
   try {
     const item = { userId: session.userId, value, description, type, date, name:user.name };
     await db.collection("balance").insertOne(item);
-    res.send(item).status(201);
+    res.status(201).send(item);
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
@@ -47,5 +47,9 @@ export async function getBalance(req, res) {
     .find({ userId: objectId(session.userId) })
     .toArray();
 
-  return res.status(200).send(userBalance);
+  let objSession = {
+    user,
+    userBalance
+  }
+  return res.status(200).send(objSession);
 }
